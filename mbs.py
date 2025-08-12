@@ -150,16 +150,16 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
         logger.error("ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx must have 'Channels' and 'ER' columns.")
         raise ValueError("Missing required columns in ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx")
     
-    er_channel_name2 = channel_c7.strip().lower()
+    er_channel_name2 = channel_c5.strip().lower()
     
     er_match2 = er_dfb[er_dfb['Channels'].str.strip().str.lower() == er_channel_name2]
 
     if not er_match2.empty:
-        er_value = er_match2.iloc[0]['ER']
-        logger.info(f"✅ ER value found for channel '{channel_c7}': {er_value}")
+        er_values = er_match2.iloc[0]['Market CPRP']
+        logger.info(f"✅ ER value found for channel '{channel_c5}': {er_values}")
     else:
         er_values = "(ER not found)"
-        logger.warning(f"⚠️ ER value NOT found for channel '{channel_c7}' in ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx.")
+        logger.warning(f"⚠️ ER value NOT found for channel '{channel_c5}' in ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx.")
 
     # ✅ 5. Write ER to M28 in 'DBD One Pager-with Eval.'
     safe_set_cell(sheet2, 'M28', er_values)
@@ -217,8 +217,8 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
  # Rows 29-32 (Channel & Platform section)
     safe_set_cell(sheet2, 'C28', channel_c5)  # C5
     safe_set_cell(sheet2, 'C29', channel_c6)  # C6
-    safe_set_cell(sheet2, 'C30', channel_c7)  # C7
-    safe_set_cell(sheet2, 'C31', channel_c8)  # C8
+    safe_set_cell(sheet2, 'C30', channel_c5)  # C7
+    safe_set_cell(sheet2, 'C31', channel_c6)  # C8
  
     safe_set_cell(sheet2, 'D28', prop_b1)  # B1
     safe_set_cell(sheet2, 'D29', prop_b1)  # B1
@@ -340,8 +340,8 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
  # Channel & Platform details
     safe_set_cell(sheet1, 'C26', channel_c5)  # channel & platform details C5
     safe_set_cell(sheet1, 'C27', channel_c6)  # channel & platform details C6
-    safe_set_cell(sheet1, 'C28', channel_c7)  # channel & platform details C7
-    safe_set_cell(sheet1, 'C29', channel_c8)  # channel & platform details C8
+    safe_set_cell(sheet1, 'C28', channel_c5)  # channel & platform details C7
+    safe_set_cell(sheet1, 'C29', channel_c6)  # channel & platform details C8
  
  # Property details for rows 26-29
     safe_set_cell(sheet1, 'D26', prop_b12 - 2)  # property details {value in (B12) -2}
@@ -388,16 +388,16 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
 
     # ✅✅✅ Call TVR Extractor and write to H30 and I30:
     tvrs = extract_tvr_data(input_a_path)
-    if tvrs and len(tvrs) >= 2:
+    if tvrs and len(tvrs) >= 4:
         safe_set_cell(sheet2, 'I28', tvrs[0])
-        safe_set_cell(sheet2, 'I29', tvrs[0])
+        safe_set_cell(sheet2, 'I29', tvrs[1])
         safe_set_cell(sheet2, 'I30', tvrs[0])
-        safe_set_cell(sheet2, 'I31', tvrs[0])
-        safe_set_cell(sheet2, 'H28', tvrs[1])
-        safe_set_cell(sheet2, 'H29', tvrs[1])
-        safe_set_cell(sheet2, 'H30', tvrs[1])
-        safe_set_cell(sheet2, 'H31', tvrs[1])
-        logger.info(f"✅ TVRs written: I30={tvrs[0]}, H30={tvrs[1]}")
+        safe_set_cell(sheet2, 'I31', tvrs[1])
+        safe_set_cell(sheet2, 'H28', tvrs[2])
+        safe_set_cell(sheet2, 'H29', tvrs[3])
+        safe_set_cell(sheet2, 'H30', tvrs[2])
+        safe_set_cell(sheet2, 'H31', tvrs[3])
+        logger.info(f"✅ TVRs written: I28={tvrs[0]}, I29={tvrs[1]}, I30={tvrs[0]}, I31={tvrs[1]}, H28={tvrs[2]}, H29={tvrs[3]}, H30={tvrs[2]}, H31={tvrs[3]}")
     else:
         logger.warning("⚠️ No TVRs returned to write in H30, I30.")
 
