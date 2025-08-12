@@ -384,7 +384,7 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
  
     safe_set_cell(sheet1, 'D41', "='DBD One Pager-with Eval.'!D45")
  
-    safe_set_cell(sheet1, 'F41', "='DBD One Pager-with Eval.'!E45")
+    safe_set_cell(sheet1, 'F41', "='DBD One Pager-with Eval.'!D47")
 
     # ✅✅✅ Call TVR Extractor and write to H30 and I30:
     tvrs = extract_tvr_data(input_a_path)
