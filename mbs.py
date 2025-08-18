@@ -3,9 +3,8 @@ from openpyxl import load_workbook
 from datetime import datetime, timedelta
 import logging
 import os
-import glob
 
-from tvr_processor import extract_tvr_data  # ✅ IMPORT the TVR extractor
+from tvr_processor import extract_tvr_data
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +34,8 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
             logger.error(error_msg)
             raise FileNotFoundError(error_msg)
 
-
     try:
-    # Load data
+        # Load data
         property_details = pd.read_excel(input_a_path, sheet_name="Property Details", header=None)
         channel_platform = pd.read_excel(input_a_path, sheet_name="Channel & Platform Details", header=None)
         program_performance = pd.read_excel(input_a_path, sheet_name="Program Performance", header=None)
@@ -45,12 +43,12 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
     except Exception as e:
         logger.error(f"Error loading input files: {str(e)}")
         raise
-    
+
     wb = load_workbook(skeleton_path)
     sheet1 = wb[wb.sheetnames[0]]
     sheet2 = wb[wb.sheetnames[1]]
 
-    # Same extraction logic as before ...
+    # Extract values
     prop_b1 = safe_get_cell(property_details, 0, 1, "")
     prop_b8 = safe_get_cell(property_details, 7, 1, "")
     prop_b14 = safe_get_cell(property_details, 13, 1, "")
@@ -115,8 +113,8 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
     end_month = campaign_end_date.strftime("%b'%y")
     result = f"{start_month} - {end_month}"
 
-        # ✅ 1. Load ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx
-    er_file_path = "input/ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx"
+    # ER and CPRP Channels
+    er_file_path = os.path.join(os.path.dirname(skeleton_path), "ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx")
     if not os.path.exists(er_file_path):
         logger.error(f"ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx file not found at {er_file_path}")
         raise FileNotFoundError(f"ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx file not found at {er_file_path}")
@@ -124,76 +122,39 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
     er_dfa = pd.read_excel(er_file_path, sheet_name="ER Channels")
     er_dfb = pd.read_excel(er_file_path, sheet_name="CPRP Channels")
 
-    # ✅ 2. Make sure columns exist
     if 'Channels' not in er_dfa.columns or 'Net Rate' not in er_dfa.columns:
-        logger.error("ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx must have 'Channels' and 'ER' columns.")
+        logger.error("ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx must have 'Channels' and 'Net Rate' columns.")
         raise ValueError("Missing required columns in ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx")
 
-    # ✅ 3. Get channel name from C6
     er_channel_name = channel_c6.strip().lower()
-
-    # ✅ 4. Match & get ER value
     er_match = er_dfa[er_dfa['Channels'].str.strip().str.lower() == er_channel_name]
-
-    if not er_match.empty:
-        er_value = er_match.iloc[0]['Net Rate']
-        logger.info(f"✅ ER value found for channel '{channel_c6}': {er_value}")
-    else:
-        er_value = "(ER not found)"
-        logger.warning(f"⚠️ ER value NOT found for channel '{channel_c6}' in ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx.")
-
-    # ✅ 5. Write ER to M31 in 'DBD One Pager-with Eval.'
+    er_value = er_match.iloc[0]['Net Rate'] if not er_match.empty else "(ER not found)"
     safe_set_cell(sheet2, 'M31', er_value)
-    logger.info(f"✅ ER value written to M31: {er_value}")
-    
+
     if 'Channels' not in er_dfb.columns:
-        logger.error("ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx must have 'Channels' and 'ER' columns.")
+        logger.error("ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx must have 'Channels' column.")
         raise ValueError("Missing required columns in ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx")
-    
+
     er_channel_name2 = channel_c5.strip().lower()
-    
     er_match2 = er_dfb[er_dfb['Channels'].str.strip().str.lower() == er_channel_name2]
-
-    if not er_match2.empty:
-        er_values = er_match2.iloc[0]['Market CPRP']
-        logger.info(f"✅ ER value found for channel '{channel_c5}': {er_values}")
-    else:
-        er_values = "(ER not found)"
-        logger.warning(f"⚠️ ER value NOT found for channel '{channel_c5}' in ER and CPRP Channels TV and Digital CTV-Mobile CPM.xlsx.")
-
-    # ✅ 5. Write ER to M28 in 'DBD One Pager-with Eval.'
+    er_values = er_match2.iloc[0]['Market CPRP'] if not er_match2.empty else "(ER not found)"
     safe_set_cell(sheet2, 'M28', er_values)
-    logger.info(f"✅ ER value written to M28: {er_values}")
 
-        # ✅ 6. Make sure 'All India CPRP' column exists in CPRP Channels sheet
     if 'All India CPRP' not in er_dfb.columns:
         logger.error("CPRP Channels sheet must have an 'All India CPRP' column.")
         raise ValueError("Missing 'All India CPRP' column in CPRP Channels sheet")
 
-    # ✅ 7. Get any value under 'All India CPRP' (assuming all rows same)
-    all_india_cprp_value = er_dfb['All India CPRP'].dropna().iloc[0]  # Pick first non-NaN value
-    logger.info(f"✅ Extracted All India CPRP value: {all_india_cprp_value}")
-
-    # ✅ 8. Write this CPRP value from N28 to N31
+    all_india_cprp_value = er_dfb['All India CPRP'].dropna().iloc[0]
     for row in range(28, 32):
         cell_ref = f'N{row}'
         safe_set_cell(sheet2, cell_ref, all_india_cprp_value)
-        logger.info(f"✅ Written All India CPRP value to {cell_ref}: {all_india_cprp_value}")
 
-
-
-    # First, parse the dates from dd-mm-yyyy format
+    # Parse dates
     start_dates = datetime.strptime(str(program_f12).strip(), "%Y-%m-%d %H:%M:%S")
     end_dates = datetime.strptime(str(program_g12).strip(), "%Y-%m-%d %H:%M:%S")
-
-    # Format to Mon'YY
     start_formatted = start_dates.strftime("%b'%y")
     end_formatted = end_dates.strftime("%b'%y")
-
-    # Combine
     formatted_range = f"{start_formatted} - {end_formatted}"
-
-    # ✅ Write to both H21 and H22 (or wherever needed)
     safe_set_cell(sheet2, 'H21', formatted_range)
     safe_set_cell(sheet2, 'H22', formatted_range)
 
@@ -386,7 +347,7 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
  
     safe_set_cell(sheet1, 'F41', "='DBD One Pager-with Eval.'!D47")
 
-    # ✅✅✅ Call TVR Extractor and write to H30 and I30:
+    # TVR extraction
     tvrs = extract_tvr_data(input_a_path)
     if tvrs and len(tvrs) >= 4:
         safe_set_cell(sheet2, 'I28', tvrs[0])
@@ -397,30 +358,11 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
         safe_set_cell(sheet2, 'H29', tvrs[3])
         safe_set_cell(sheet2, 'H30', tvrs[2])
         safe_set_cell(sheet2, 'H31', tvrs[3])
-        logger.info(f"✅ TVRs written: I28={tvrs[0]}, I29={tvrs[1]}, I30={tvrs[0]}, I31={tvrs[1]}, H28={tvrs[2]}, H29={tvrs[3]}, H30={tvrs[2]}, H31={tvrs[3]}")
+        logger.info(f"TVRs written: I28={tvrs[0]}, I29={tvrs[1]}, I30={tvrs[0]}, I31={tvrs[1]}, H28={tvrs[2]}, H29={tvrs[3]}, H30={tvrs[2]}, H31={tvrs[3]}")
     else:
-        logger.warning("⚠️ No TVRs returned to write in H30, I30.")
+        logger.warning("No TVRs returned to write in H30, I30.")
 
-    # ✅ Save workbook
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     wb.save(output_path)
-    logger.info(f"✅ Process finished. Output saved to {output_path}")
-    print(f"✅ Detailed Package file generated successfully")
-
-# ✅✅✅ Final: main block — ye sabke last mei lagao
-
-if __name__ == "__main__":
-    non_cricket_folder = "input/non_cricket_input/"
-    input_b = "input/TVR Output.xlsx"
-    skeleton = "input/Skeleton Output.xlsx"
-    output = "output/Completed_Output.xlsx"
-    
-    non_cricket_files = glob.glob(os.path.join(non_cricket_folder, "*.xlsx"))
-    if not non_cricket_files:
-        raise FileNotFoundError(f"No Non Cricket Input file found in {non_cricket_folder}")
-    
-    input_a = non_cricket_files[0]  # Pick first match
-
-    print(f"Using Non Cricket Input file: {input_a}")
-
-    process_excel_data(input_a, input_b, skeleton, output)
+    logger.info(f"Process finished. Output saved to {output_path}")
+    print(f"Detailed Package file generated successfully")
