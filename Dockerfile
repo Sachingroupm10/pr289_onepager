@@ -20,4 +20,4 @@ COPY . .
 
 # Expose port and define the container entrypoint.
 EXPOSE 8080
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--timeout", "600", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--timeout", "1500", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
