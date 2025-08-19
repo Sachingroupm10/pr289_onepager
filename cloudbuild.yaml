@@ -3,7 +3,7 @@ substitutions:
   _SERVICE_NAME: "pr289_onepager"
   _IMAGE: "image-pr289-onepager"
   _REGION: "asia-south2"  # Change this if you want a different region
-
+ 
 steps:
   # Step 1: Create the Artifact Registry repo (if it doesn't exist)
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -14,7 +14,7 @@ steps:
         gcloud artifacts repositories describe ${_REPO_NAME} --location=${_REGION} || \
         gcloud artifacts repositories create ${_REPO_NAME} --repository-format=docker --location=${_REGION} --quiet
     id: 'create-repo'
-
+ 
   # Step 2: Configure Docker authentication with Artifact Registry
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
@@ -24,7 +24,7 @@ steps:
         gcloud auth configure-docker ${_REGION}-docker.pkg.dev
     id: 'docker-auth'
     wait_for: ['create-repo']
-
+ 
   # Step 3: Build the Docker image using BuildKit
   - name: 'gcr.io/cloud-builders/docker'
     env:
@@ -37,7 +37,7 @@ steps:
       - '.'
     id: 'build'
     wait_for: ['docker-auth']
-
+ 
   # Step 4: Push the Docker image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
@@ -45,7 +45,7 @@ steps:
       - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO_NAME}/${_IMAGE}:$COMMIT_SHA'
     id: 'push'
     wait_for: ['build']
-
+ 
   # Step 5: Deploy the image to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
@@ -61,6 +61,6 @@ steps:
       # - '--allow-unauthenticated'
     id: 'deploy'
     wait_for: ['push']
-
+ 
 options:
   logging: CLOUD_LOGGING_ONLY
