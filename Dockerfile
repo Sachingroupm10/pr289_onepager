@@ -1,31 +1,23 @@
-FROM python:3.11
+FROM python:3.13-slim-bookworm
 
 # Set working directory
 WORKDIR /app
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV FLASK_APP=app.py
-ENV PORT=8080
+# Install system-level build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
+# Upgrade pip, setuptools, and wheel
+RUN pip install --upgrade pip setuptools wheel
 
-# Install dependencies
+# Copy and install only the requirements first (to leverage caching)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project
+# Copy the remaining application code
 COPY . .
 
-# Create data directory if it doesn't exist
-RUN mkdir -p data
-
-# Make sure Skeleton Output.xlsx exists
-# (No need to do anything if it's already in your repository)
-
-# Expose port
+# Expose port and define the container entrypoint.
 EXPOSE 8080
-
-# Run the application
-CMD gunicorn --bind 0.0.0.0:8080 app:app
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--timeout", "600", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
