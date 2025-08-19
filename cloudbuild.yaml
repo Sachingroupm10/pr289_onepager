@@ -1,4 +1,5 @@
 substitutions:
+  _PROJECT_ID: "grminnexus"  
   _REPO_NAME: "pr289-onepager"
   _SERVICE_NAME: "pr289_onepager"
   _IMAGE: "image-pr289-onepager"
