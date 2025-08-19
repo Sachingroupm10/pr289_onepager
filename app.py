@@ -143,5 +143,5 @@ if __name__ == '__main__':
   print("Base64 A:", base64_a)
   print("Base64 B:", base64_b)
 
-  port = int(os.environ.get("PORT", 8080))
-  app.run(host='0.0.0.0', port=port, debug=True)
+  #port = int(os.environ.get("PORT", 8080))
+  app.run(host='0.0.0.0', port=8080, debug=True)
