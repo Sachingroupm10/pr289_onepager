@@ -28,7 +28,7 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
     logger.info(f"Process started on {datetime.now().strftime('%A, %B %d, %Y at %H:%M:%S')}")
 
     # File checks
-    for path, name in [(input_a_path, "Non Cricket Input"), (input_b_path, "TVR Output"), (skeleton_path, "Skeleton")]:
+    for path, name in [(input_a_path, "Non Cricket Input"), (skeleton_path, "Skeleton")]:
         if not os.path.exists(path):
             error_msg = f"{name} file not found at path: {path}"
             logger.error(error_msg)
@@ -39,7 +39,7 @@ def process_excel_data(input_a_path, input_b_path, skeleton_path, output_path):
         property_details = pd.read_excel(input_a_path, sheet_name="Property Details", header=None)
         channel_platform = pd.read_excel(input_a_path, sheet_name="Channel & Platform Details", header=None)
         program_performance = pd.read_excel(input_a_path, sheet_name="Program Performance", header=None)
-        input_b = pd.read_excel(input_b_path, header=None)
+        #input_b = pd.read_excel(input_b_path, header=None)
     except Exception as e:
         logger.error(f"Error loading input files: {str(e)}")
         raise

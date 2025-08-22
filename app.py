@@ -92,7 +92,7 @@ def process_pager_excelfile():
           file_map[file_type] = input_path
 
       # Ensure both required file types are present
-      required_types = ["input_a", "input_b"]
+      required_types = ["input_a"]
       missing_types = [ft for ft in required_types if ft not in file_map]
 
       if missing_types:
@@ -104,7 +104,6 @@ def process_pager_excelfile():
       output_file = os.path.join(UPLOAD_FOLDER, "Completed_Output.xlsx")
       process_excel_data(
           file_map["input_a"],
-          file_map["input_b"],
           SKELETON_FILE,
           output_file
       )
@@ -124,7 +123,7 @@ def process_pager_excelfile():
           "output_filename": "Completed_Output.xlsx"
       }
 
-      return jsonify(result)
+      return jsonify(result), 200
 
   except Exception as e:
       logger.exception("An error occurred while processing the request.")
@@ -145,3 +144,5 @@ if __name__ == '__main__':
 
   #port = int(os.environ.get("PORT", 8080))
   app.run(host='0.0.0.0', port=8080, debug=True)
+  
+  #URL: https://pr289-onepager-259229655887.asia-south2.run.app
