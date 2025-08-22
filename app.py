@@ -92,7 +92,7 @@ def process_pager_excelfile():
           file_map[file_type] = input_path
 
       # Ensure both required file types are present
-      required_types = ["input_a"]
+      required_types = ["input_a", "input_b"]
       missing_types = [ft for ft in required_types if ft not in file_map]
 
       if missing_types:
@@ -104,6 +104,7 @@ def process_pager_excelfile():
       output_file = os.path.join(UPLOAD_FOLDER, "Completed_Output.xlsx")
       process_excel_data(
           file_map["input_a"],
+          file_map["input_b"],
           SKELETON_FILE,
           output_file
       )
